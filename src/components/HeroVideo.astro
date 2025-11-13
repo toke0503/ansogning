@@ -1,0 +1,32 @@
+---
+import hero from "../assets/images/hero.mp4";
+---
+
+<section class="relative w-full h-screen overflow-hidden">
+  <!-- Video background (autoplay, muted, loop, playsinline for mobile) -->
+  <video
+    class="absolute inset-0 w-full h-full object-cover"
+    autoplay
+    muted
+    loop
+    playsinline
+    aria-hidden="true"
+    src={hero}
+  ></video>
+
+  <!-- Slight dark overlay to improve text contrast -->
+  <div class="absolute inset-0 bg-black/35"></div>
+
+  <!-- Foreground content -->
+  <div class="relative z-10 flex flex-col items-center justify-between h-screen px-6 py-8">
+    <!-- Top heading -->
+    <header class="w-full flex justify-center pt-6">
+      <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-red-600 tracking-tight text-center" style="font-family:var(--font-display)">TOKE ELLEGAARD JENSEN</h1>
+    </header>
+
+    <!-- Bottom caption -->
+    <footer class="w-full flex justify-center pb-6">
+      <span class="text-xs sm:text-sm text-red-600 uppercase tracking-widest" style="opacity:0.9">scroll to learn more</span>
+    </footer>
+  </div>
+</section>

@@ -1,5 +1,6 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
+import hero from "../assets/images/hero.mp4";
 import Link from "../components/Link.astro";
 import { Image } from "astro:assets";
 import thumbsup from "../assets/images/thumbsup.png";
@@ -8,8 +9,154 @@ import Text from "../components/Text.astro";
 import Button from "../components/Button.astro";
 ---
 <MainLayout title="Titel">
-	<main class="container mx-auto p-4">
-		<Heading htmlheading="h1">Lav noget flot!</Heading>
-        <Text teksttype="brødtekst">Så bliver Anders glad:-)</Text>
-	</main>
+	<section class="relative w-full h-screen overflow-hidden">
+		<!-- Video background (autoplay, muted, loop, playsinline for mobile) -->
+			<video
+			class="fixed inset-0 w-full h-full object-cover z-0"
+			autoplay
+			muted
+			loop
+			playsinline
+			aria-hidden="true"
+				src={hero}
+		></video>
+
+		<!-- Slight dark overlay to improve text contrast -->
+		<div class="fixed inset-0 bg-black/35 z-10"></div>
+
+		<!-- Blur overlay (animated via JS) -->
+		<div id="hero-blur" class="fixed inset-0 z-20" style="backdrop-filter: blur(0px); opacity:0;"></div>
+
+	<!-- Foreground content -->
+	<div id="hero-content" class="relative z-30 flex flex-col items-center justify-between h-screen px-6 py-8">
+			<!-- Top heading (left aligned) -->
+			<header class="w-full flex justify-start pt-6 pl-6">
+				<h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-red-600 tracking-tight text-left">TOKE ELLEGAARD <br> JENSEN</h1>
+			</header>
+
+			<!-- Bottom caption as paragraph (will get p styles + small hop) -->
+			<footer class="w-full flex justify-center pb-6">
+				<p class="fixed-scroll-text text-xs sm:text-sm text-red-600 uppercase tracking-widest hop" style="opacity:0.9">scroll to learn more</p>
+			</footer>
+		</div>
+	</section>
+
+	<!-- Slide-in overlay (fixed) -->
+	<section id="about-overlay" class="slide-section" aria-hidden="true">
+		<div class="inner">
+			<div class="container mx-auto">
+				<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+					<div class="md:col-span-4">
+						<h2 class="text-4xl md:text-6xl font-extrabold text-red-600">WHO AM I ?</h2>
+					</div>
+					<div class="md:col-span-8">
+						<p class="text-base md:text-lg text-red-600">Hi, I'm Toke Ellegaard Jensen — a Multimedia Design student based in Copenhagen with a growing passion for film, visual storytelling, and branding. I've always loved making and watching films, but recently I've rediscovered that passion and decided to take it more seriously. I’ve invested in a camera and gear, and I share my learning process and experiments on @toke.visuals. I’m curious about every part of the production process — from idea development and filming to editing and color grading — and I love learning by doing. I bring energy, curiosity, and a hands-on mindset, and I’m always excited to be part of a creative team where I can contribute and grow.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
 </MainLayout>
+<script>
+	// Add haze effect by duplicating text into a data-text attribute and a class
+	// Targets: h1-h6, p, li, button, label
+	document.addEventListener('DOMContentLoaded', () => {
+		const selectors = 'h1,h2,h3,h4,h5,h6,p,li,button,label';
+		const els = document.querySelectorAll(selectors);
+		els.forEach((el) => {
+			const txt = el.textContent.trim();
+			if (!txt) return;
+			el.classList.add('haze-text');
+			// preserve original whitespace/newlines in data-text
+			el.setAttribute('data-text', txt);
+		});
+
+		// Slide-in overlay control using wheel/touch progress
+		const overlay = document.getElementById('about-overlay');
+		const heroContent = document.getElementById('hero-content');
+		const heroBlur = document.getElementById('hero-blur');
+		const maxBlur = 10; // px
+
+		if (!overlay || !heroContent || !heroBlur) return;
+
+		let progress = 0; // 0..1
+		let target = 0;
+		let rafId = null;
+
+		function apply(p) {
+			// overlay slides from right: translateX(100% -> 0%)
+			const tx = 100 - p * 100; // percent
+			overlay.style.transform = `translateX(${tx}%)`;
+			overlay.style.opacity = `${p}`;
+			overlay.setAttribute('aria-hidden', p === 0 ? 'true' : 'false');
+
+			// hero content pushed left
+			const heroTx = -p * 120; // percent
+			heroContent.style.transform = `translateX(${heroTx}%)`;
+			heroContent.style.opacity = `${1 - p}`;
+
+			// blur overlay
+			const blurPx = Math.min(maxBlur, p * maxBlur);
+			heroBlur.style.backdropFilter = `blur(${blurPx}px)`;
+			heroBlur.style.opacity = `${p * 0.85}`;
+
+			// pointer events: enable overlay interactions only when open
+			overlay.style.pointerEvents = p > 0.01 ? 'auto' : 'none';
+		}
+
+		function raf() {
+			progress += (target - progress) * 0.18;
+			if (Math.abs(target - progress) < 0.001) progress = target;
+			apply(progress);
+			if (progress !== target) rafId = requestAnimationFrame(raf); else rafId = null;
+		}
+
+		function setTarget(v) {
+			target = Math.max(0, Math.min(1, v));
+			if (!rafId) rafId = requestAnimationFrame(raf);
+		}
+
+		// Wheel handling
+		window.addEventListener('wheel', (e) => {
+			const delta = Math.sign(e.deltaY);
+			if (delta > 0) {
+				// scroll down -> reveal overlay
+				setTarget(target + Math.abs(e.deltaY) / 600);
+			} else if (delta < 0) {
+				setTarget(target - Math.abs(e.deltaY) / 600);
+			}
+
+			// prevent default page scroll while overlay is moving or not fully open
+			if (target > 0 && target < 1) {
+				e.preventDefault();
+			}
+		}, { passive: false });
+
+		// Touch support
+		let touchStartY = null;
+		window.addEventListener('touchstart', (e) => {
+			touchStartY = e.touches[0].clientY;
+		}, { passive: true });
+		window.addEventListener('touchmove', (e) => {
+			if (touchStartY === null) return;
+			const dy = touchStartY - e.touches[0].clientY;
+			setTarget(target + dy / 800);
+			touchStartY = e.touches[0].clientY;
+			if (target > 0 && target < 1) e.preventDefault();
+		}, { passive: false });
+
+		// Allow normal page scrolling when overlay fully open (target===1)
+		// and allow closing by scrolling up when at top of overlay content
+		overlay.addEventListener('wheel', (e) => {
+			if (target < 1) return; // ignore until fully open
+			const inner = overlay.querySelector('.inner');
+			// if inner can scroll, allow it; otherwise close on scroll up
+			const atTop = inner.scrollTop === 0;
+			if (e.deltaY < 0 && atTop) {
+				// scroll up at top -> close overlay
+				setTarget(Math.max(0, target - Math.abs(e.deltaY) / 300));
+				e.preventDefault();
+			}
+		}, { passive: false });
+	});
+</script>
