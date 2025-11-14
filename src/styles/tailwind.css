@@ -485,7 +485,9 @@
      elements on pointer devices that support fine pointing. Coarse pointers
      (touch) are handled below and will show the native cursor. */
   @media (pointer: fine) {
-    html, body, * {
+    html,
+    body,
+    * {
       cursor: none !important;
     }
   }
