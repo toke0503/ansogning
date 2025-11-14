@@ -64,6 +64,56 @@
   p {
     font-family: "Helvetica Neue", var(--font-sans);
     font-weight: 700;
+    /* Make paragraphs effectively 22px on larger screens but responsive on small
+     viewports. Clamp ensures a min, a fluid middle value, and a max of 22px. */
+    font-size: clamp(16px, 1.25rem + 0.5vw, 22px);
+  }
+
+  /* Apply difference blending to textual elements so they invert against the
+     background/video. This selector covers headings, paragraphs and common
+     inline text elements. If you need to opt-out a specific element, add
+     `mix-blend-mode: normal` for that selector. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  li,
+  button,
+  label,
+  a,
+  span,
+  strong,
+  em,
+  b,
+  i,
+  small,
+  sub,
+  sup,
+  mark,
+  q,
+  cite,
+  code,
+  pre {
+    mix-blend-mode: difference;
+  }
+
+  /* Opt-out: keep h1 rendered normally (no blend) for consistent color and contrast */
+  h1 {
+    mix-blend-mode: normal !important;
+  }
+
+  /* If any element in the tree has created an isolated stacking context (e.g. via
+     `isolation: isolate`), mix-blend-mode may not be able to blend against the
+     video underneath. Override isolation for the main hero and overlay areas so
+     text can blend with the background video. */
+  #hero-content,
+  #about-overlay,
+  .slide-section,
+  .fixed-scroll-text {
+    isolation: auto !important;
   }
 }
 
@@ -71,38 +121,141 @@
    JavaScript will add the `haze-text` class and a `data-text` attribute
    to target elements (h1-h6, p, li, button, label). */
 @layer components {
-  .haze-text {
-    position: relative;
-    z-index: 1; /* make sure the main text is above the blurred layer */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  /* Use text-shadow to produce a glow effect (replaces the previous pseudo-element haze)
+     We mimic spread by applying multiple shadows with increasing blur radii. Values chosen
+     to match the visual spread from the previous blur (soft layer ~12px / paragraph ~4px).
+     text-shadow uses currentColor so it matches the element color (e.g., text-red-600). */
+  h1 {
+    /* Stronger subtle glow for main headings */
+    /* slightly stronger glow for more presence */
+    text-shadow: 0 0 8px currentColor, 0 0 18px rgba(0, 0, 0, 0.12), 0 3px 24px rgba(0, 0, 0, 0.16);
   }
 
-  .haze-text::before {
-    content: attr(data-text);
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    color: currentColor;
-    filter: blur(6px);
-    opacity: 0.55;
-    z-index: 0; /* sits behind the element's real text */
-    pointer-events: none;
-    transform: translateZ(0);
-    white-space: pre-wrap; /* preserve wrapping like the original */
+  p {
+    /* Slightly stronger paragraph glow */
+    text-shadow: 0 0 2px currentColor, 0 0 6px rgba(0, 0, 0, 0.07);
   }
 
-  /* paragraphs should have a subtler haze */
-  p.haze-text::before {
-    filter: blur(2px);
-    opacity: 0.6;
+  /* Apply a modest glow to other text elements so the effect is consistent site-wide */
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  a,
+  span,
+  li,
+  button,
+  label {
+    text-shadow: 0 0 2px currentColor, 0 0 5px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Per-letter hover styling: split text into .char spans and apply a soft skew/italic transition */
+  .text-split {
+    display: inline-block; /* keep container inline but allow children transforms */
+    line-height: 1;
+    /* hide native cursor even over text - we use a custom cursor element instead */
+    cursor: none;
+  }
+
+  .text-split .char {
+    display: inline-block;
+    white-space: pre; /* preserve spaces/newlines if present */
+    -webkit-user-select: text;
+    user-select: text;
+    transform-origin: 50% 50%;
+    /* longer, transform-only transition with a smooth ease to avoid final jolt */
+    transition: transform 420ms cubic-bezier(0.22, 0.1, 0.16, 1), color 220ms ease;
+    /* no stagger by default; ensure no per-letter delay so all letters animate together */
+    transition-delay: 0ms;
+    will-change: transform;
+    /* default scale is 1; JS will set --scale so we can precisely scale by pixels without layout shift */
+    --scale: 1;
+  }
+
+  /* Word-level split: wrap words in .word and apply hover to entire word */
+  .text-split .word {
+    display: inline-block;
+    white-space: pre;
+    -webkit-user-select: text;
+    user-select: text;
+    transform-origin: 50% 50%;
+    transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1), font-style 180ms ease, color 160ms ease;
+    --scale: 1;
+  }
+
+  .text-split .word:hover {
+    /* Slightly scale the whole word on hover (no tilt) to give a bit more pop while
+     individual letters still animate with skew/scale. The per-letter transform is
+     applied to .char; the word-scale is a small additional multiplier. */
+    transform: scale(var(--word-scale, 1.06));
+    transform-origin: center;
+    /* font-style removed to avoid reflow/metric changes; visual tilt is handled
+     purely by transform on the .char elements for smooth animation */
+  }
+
+  /* Per-letter inside each word: inherit text-shadow and animate on word hover */
+  .text-split .word .char {
+    display: inline-block;
+    white-space: pre;
+    transform-origin: 50% 50%;
+    /* match the per-letter transition duration so all letters animate in sync;
+       use transform-only to ensure smooth motion */
+    transition: transform 420ms cubic-bezier(0.22, 0.1, 0.16, 1), color 220ms ease;
+    will-change: transform;
+    /* ensure the shadow is visible even though text was replaced with spans */
+    text-shadow: inherit;
+    mix-blend-mode: inherit;
+  }
+
+  /* Explicitly re-apply the h1/p text-shadow to per-letter spans because
+     some browsers may not render the inherited shadow as expected when text
+     is wrapped in many inline elements. Using explicit rules ensures the
+     glow remains visible. */
+  h1.text-split .word .char {
+    /* stronger h1 per-letter glow to match visual weight */
+    text-shadow: 0 0 8px currentColor, 0 0 18px rgba(0, 0, 0, 0.12), 0 3px 24px rgba(0, 0, 0, 0.16);
+    /* restore font kerning and add a tiny positive tracking so adjacent glyphs
+       (like the double A in ELLEGAARD) don't visually overlap when split into
+       separate spans. Also ensure blend mode is normal for these letters so
+       we don't get inverted/dark artefacts where glyphs overlap. */
+    font-kerning: normal;
+    -webkit-font-kerning: normal;
+    letter-spacing: 0.02em;
+    mix-blend-mode: normal !important;
+  }
+
+  p.text-split .word .char {
+    /* Use a slightly smaller red glow for paragraph text so it feels lighter. */
+    text-shadow: 0 0 4px currentColor, 0 0 8px rgba(220, 38, 38, 0.1);
+  }
+
+  /* fallback for other small text elements that used the global text-shadow */
+  .text-split .word .char {
+    text-shadow: 0 0 2px currentColor, 0 0 5px rgba(0, 0, 0, 0.06);
+  }
+
+  /* When hovering the word, animate each letter the same way (no spread) */
+  .text-split .word:hover .char {
+    /* All letters animate together (no stagger). Use transform-only tilt so
+       the browser can keep animation on the compositor thread for maximum
+       smoothness and avoid reflow at the end. */
+    transform: skewY(-14deg) translateY(-1px) scale(var(--scale, 1));
+    transition-delay: 0ms;
   }
 }
 
 /* Slide-in overlay styles */
 @layer components {
+  /* utility for backdrop blur layers */
+  .hero-blur-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    will-change: backdrop-filter, opacity;
+    z-index: 20;
+  }
+
   .slide-section {
     position: fixed;
     inset: 0;
@@ -144,6 +297,111 @@
     transform: translateX(-50%);
     z-index: 60;
     pointer-events: none;
+    display: inline-block; /* ensure width fits content and centering works */
+    text-align: center;
+    /* make the small caption slightly smaller than body p text */
+    font-size: clamp(11px, 0.9rem + 0.2vw, 13px);
+  }
+}
+
+/* Custom square cursor: small red square that uses mix-blend-mode: difference
+   to invert against the background video. Implemented as a fixed element that
+   follows the mouse (JS) because CSS cursors can't use blend modes. */
+@layer components {
+  /* Hide native cursor on non-touch devices (everywhere, including over text).
+     Use !important so it cannot be overridden by other rules; interactive
+     elements remain usable because the custom cursor has pointer-events: none. */
+  body {
+    cursor: none !important;
+  }
+
+  /* The visual cursor itself: uses currentColor so we can give it the same
+     red color by adding the utility class `text-red-600` to the element. */
+  #custom-cursor {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    background: currentColor;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    border-radius: 2px; /* slight rounding keeps it from looking too harsh */
+    transition: width 120ms ease, height 120ms ease, opacity 160ms ease, transform 120ms ease;
+    will-change: transform, left, top, opacity;
+    opacity: 0.98;
+  }
+
+  /* Note: native cursor override for interactive elements removed so the
+    native cursor is never visible on desktop. Inputs will still behave
+    correctly (focus caret appears) and the custom cursor is pointer-events:none
+    so clicking works as expected. */
+
+  /* Explicitly ensure anchors and other interactive elements never show the
+     native cursor on non-touch devices — we use the custom square cursor for
+     all pointer feedback. */
+  a,
+  .inline-link,
+  button,
+  input,
+  textarea,
+  select,
+  label,
+  [role="button"] {
+    cursor: none !important;
+  }
+
+  /* Inline link styling: keep the link visually similar to surrounding text
+     but make it clearly interactive via a subtle underline and hover/focus
+     emphasis. Works well inside paragraphs. */
+
+  .inline-link {
+    /* make link text white while keeping it visually similar to surrounding
+     content; remove underline and rely on text-shadow for emphasis */
+    color: #ffffff;
+    text-decoration: none;
+    border-bottom: none;
+    /* make underline fully visible by default so it reads clearly as a link */
+    opacity: 1;
+    padding-bottom: 1px;
+    transition: transform 160ms ease, letter-spacing 160ms ease, box-shadow 160ms ease;
+    text-underline-offset: 2px;
+    /* white glow to match the white link color */
+    text-shadow: 0 0 6px #fff, 0 0 12px rgba(255, 255, 255, 0.06);
+  }
+
+  .inline-link:hover,
+  .inline-link:focus {
+    /* On hover/focus, make the link visually 'pressed' by switching to black
+       instead of scaling — keeps the layout stable and gives a clear state. */
+    opacity: 1;
+    outline: none;
+    text-decoration: none;
+    letter-spacing: 0;
+    transform: none;
+    /* on hover, switch to a darker red instead of black */
+    color: #991b1b !important; /* tailwind red-800 */
+    /* darker red glow for pressed state */
+    text-shadow: 0 0 4px rgba(153, 27, 27, 0.7), 0 0 8px rgba(153, 27, 27, 0.18);
+  }
+
+  /* Accessibility: visible focus ring for keyboard users */
+  .inline-link:focus-visible {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06), 0 0 0 6px rgba(0, 0, 0, 0.12);
+    border-radius: 2px;
+  }
+
+  /* Hide the custom cursor on coarse pointer devices (touchscreens) to avoid
+     awkwardness — on those devices the native touch interactions should remain. */
+  @media (pointer: coarse) {
+    #custom-cursor {
+      display: none !important;
+    }
+    body {
+      cursor: auto !important;
+    }
   }
 }
 
@@ -152,10 +410,10 @@
   @keyframes hop {
     0%,
     100% {
-      transform: translateY(0);
+      transform: translateX(-50%) translateY(0);
     }
     50% {
-      transform: translateY(-6px);
+      transform: translateX(-50%) translateY(-6px);
     }
   }
 

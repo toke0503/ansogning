@@ -8,35 +8,65 @@ import Heading from "../components/Heading.astro";
 import Text from "../components/Text.astro";
 import Button from "../components/Button.astro";
 ---
-<MainLayout title="Titel">
+<MainLayout title="TOKE ELLEGAARD JENSEN — Multimedia Design Student">
+	<!-- Ensure page background is black so blurred edges don't reveal a white page background -->
+	<style>
+		html, body { background: #000; }
+	</style>
 	<section class="relative w-full h-screen overflow-hidden">
 		<!-- Video background (autoplay, muted, loop, playsinline for mobile) -->
 			<video
 			class="fixed inset-0 w-full h-full object-cover z-0"
-			autoplay
+				autoplay
 			muted
 			loop
 			playsinline
 			aria-hidden="true"
-				src={hero}
-		></video>
+					 src={hero}
+					 style="background-color: black; filter: url(#svgMultiBlur);"
+			></video>
 
-		<!-- Slight dark overlay to improve text contrast -->
-		<div class="fixed inset-0 bg-black/35 z-10"></div>
+	<!-- Slight dark overlay to improve text contrast (reduced opacity so blend modes remain visible) -->
+	<div class="fixed inset-0 bg-black/55 z-10"></div>
 
 		<!-- Blur overlay (animated via JS) -->
-		<div id="hero-blur" class="fixed inset-0 z-20" style="backdrop-filter: blur(0px); opacity:0;"></div>
+		<!-- Decorative overlay elements (tint/opacity) kept for layering; actual blur is handled by the SVG filter below -->
+		<div id="hero-blur" class="fixed inset-0 z-20" style="opacity:0;"></div>
+		<div id="hero-blur-1" class="hero-blur-layer z-20" style="opacity:0;"></div>
+		<!-- second blur layer for a layered effect (visual tint only) -->
+		<div id="hero-blur-2" class="hero-blur-layer z-22" style="opacity:0;"></div>
+
+		<!-- SVG filter: two Gaussian blur stages merged for a layered Gaussian effect -->
+		<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+			<!-- Expanded filter region so blurs aren't clipped at the element edges (removes white/halo border) -->
+			<filter id="svgMultiBlur" x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox">
+				<!-- Flood black behind the graphic so blurred edges don't composite with a white page background -->
+				<feFlood flood-color="#000" result="flood" />
+				<!-- Keep flood only where the source graphic has content -->
+				<feComposite in="flood" in2="SourceGraphic" operator="in" result="bgMasked" />
+				<!-- first, softer blur -->
+				<feGaussianBlur in="SourceGraphic" stdDeviation="0" result="b1" id="feBlur1" />
+				<!-- second, stronger blur applied on top of the first -->
+				<feGaussianBlur in="b1" stdDeviation="0" result="b2" id="feBlur2" />
+				<feMerge>
+					<!-- draw the black background masked to the source first, then blurred layers on top -->
+					<feMergeNode in="bgMasked" />
+					<feMergeNode in="b1" />
+					<feMergeNode in="b2" />
+				</feMerge>
+			</filter>
+		</svg>
 
 	<!-- Foreground content -->
 	<div id="hero-content" class="relative z-30 flex flex-col items-center justify-between h-screen px-6 py-8">
 			<!-- Top heading (left aligned) -->
 			<header class="w-full flex justify-start pt-6 pl-6">
-				<h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-red-600 tracking-tight text-left">TOKE ELLEGAARD <br> JENSEN</h1>
+				<h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-red-600 tracking-tight text-left text-split">TOKE <br> ELLEGAARD <br>JENSEN</h1>
 			</header>
 
-			<!-- Bottom caption as paragraph (will get p styles + small hop) -->
+			<!-- Bottom caption placeholder (fixed scroll text moved outside hero-content so it doesn't get shifted) -->
 			<footer class="w-full flex justify-center pb-6">
-				<p class="fixed-scroll-text text-xs sm:text-sm text-red-600 uppercase tracking-widest hop" style="opacity:0.9">scroll to learn more</p>
+				<!-- left intentionally empty -->
 			</footer>
 		</div>
 	</section>
@@ -44,40 +74,120 @@ import Button from "../components/Button.astro";
 	<!-- Slide-in overlay (fixed) -->
 	<section id="about-overlay" class="slide-section" aria-hidden="true">
 		<div class="inner">
-			<div class="container mx-auto">
+			<!-- Place WHO AM I as h1 in the same top-left position as the hero heading -->
+				<h1 class="absolute top-6 left-6 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-red-600 tracking-tight text-left text-split">WHO AM I ?</h1>
+			<div class="container mx-auto pt-32">
 				<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-					<div class="md:col-span-4">
-						<h2 class="text-4xl md:text-6xl font-extrabold text-red-600">WHO AM I ?</h2>
-					</div>
-					<div class="md:col-span-8">
-						<p class="text-base md:text-lg text-red-600">Hi, I'm Toke Ellegaard Jensen — a Multimedia Design student based in Copenhagen with a growing passion for film, visual storytelling, and branding. I've always loved making and watching films, but recently I've rediscovered that passion and decided to take it more seriously. I’ve invested in a camera and gear, and I share my learning process and experiments on @toke.visuals. I’m curious about every part of the production process — from idea development and filming to editing and color grading — and I love learning by doing. I bring energy, curiosity, and a hands-on mindset, and I’m always excited to be part of a creative team where I can contribute and grow.</p>
+					<div class="md:col-span-12 md:col-start-5">
+						<!-- removed local size utilities so global clamp(22px) applies -->
+						<p class="text-red-600 text-split">Hi, I'm Toke Ellegaard Jensen — a Multimedia Design student based in Copenhagen with a growing passion for film, visual storytelling, and branding. I've always loved making and watching films, but recently I've rediscovered that passion and decided to take it more seriously. I’ve invested in a camera and gear, and I share my learning process and experiments on <a class="inline-link" href="https://www.instagram.com/toke.visuals/" target="_blank" rel="noopener noreferrer">@toke.visuals</a>. I’m curious about every part of the production process — from idea development and filming to editing and color grading — and I love learning by doing. I bring energy, curiosity, and a hands-on mindset, and I’m always excited to be part of a creative team where I can contribute and grow.</p>
 					</div>
 				</div>
 			</div>
 		</div>
 	</section>
+
+	<!-- Fixed scroll text kept outside hero-content so it stays centered and animated -->
+	<p class="fixed-scroll-text text-red-600 uppercase tracking-widest hop text-split" style="opacity:0.9">scroll to learn more</p>
+
+    <!-- Custom square cursor (red) that uses mix-blend-mode: difference -->
+    <div id="custom-cursor" class="text-red-600" aria-hidden="true"></div>
 </MainLayout>
 <script>
 	// Add haze effect by duplicating text into a data-text attribute and a class
 	// Targets: h1-h6, p, li, button, label
 	document.addEventListener('DOMContentLoaded', () => {
-		const selectors = 'h1,h2,h3,h4,h5,h6,p,li,button,label';
-		const els = document.querySelectorAll(selectors);
-		els.forEach((el) => {
-			const txt = el.textContent.trim();
-			if (!txt) return;
-			el.classList.add('haze-text');
-			// preserve original whitespace/newlines in data-text
-			el.setAttribute('data-text', txt);
-		});
+		// Split selected text nodes into word spans for hover-on-word animation
+		function splitTextToWords(selector) {
+			document.querySelectorAll(selector).forEach(el => {
+				if (el.dataset.split === '1') return;
+				// compute scale so hovered word increases exactly by 2px: scale = (base+2)/base
+				const parentFont = window.getComputedStyle(el).fontSize || '16px';
+				const parentPx = parseFloat(parentFont) || 16;
+				const scaleVal = (parentPx + 2) / parentPx;
+				// collect current child nodes and rebuild preserving element children like <br>
+				const nodes = Array.from(el.childNodes);
+				el.innerHTML = '';
+				nodes.forEach(node => {
+					// node comes from childNodes; TS/astro typechecker may treat it as unknown
+					// so we silence the type checker for DOM-specific properties here.
+					// @ts-ignore
+					if (node.nodeType === Node.ELEMENT_NODE) {
+						// preserve element nodes (e.g., <br>) as-is
+						// @ts-ignore
+						el.appendChild(node.cloneNode(true));
+						return;
+					}
+					// @ts-ignore
+					const text = node.textContent || '';
+					// split into words and whitespace tokens, preserving whitespace
+					const tokens = text.split(/(\s+)/);
+					tokens.forEach(token => {
+						if (!token) return;
+						if (/^\s+$/.test(token)) {
+							// preserve whitespace as text node
+							el.appendChild(document.createTextNode(token));
+						} else {
+							// create a word wrapper containing per-character spans so we can
+							// animate each letter individually while hovering the whole word
+							const wordEl = document.createElement('span');
+							wordEl.className = 'word';
+							wordEl.style.setProperty('--scale', String(scaleVal));
+							const chars = Array.from(token);
+							chars.forEach((ch, idx) => {
+								const chSpan = document.createElement('span');
+								chSpan.className = 'char';
+								chSpan.textContent = String(ch);
+								chSpan.style.setProperty('--i', String(idx));
+								wordEl.appendChild(chSpan);
+							});
+							el.appendChild(wordEl);
+						}
+					});
+				});
+				el.dataset.split = '1';
+			});
+		}
+
+		// Apply to all elements marked with .text-split (word-level)
+		splitTextToWords('.text-split');
+
+			// Note: haze pseudo-element approach removed. Glow is implemented via text-shadow
+			// in CSS, so we don't need to duplicate text into data-text or add haze classes.
 
 		// Slide-in overlay control using wheel/touch progress
 		const overlay = document.getElementById('about-overlay');
 		const heroContent = document.getElementById('hero-content');
+		// SVG filter handles the actual Gaussian blur on the video (feBlur1, feBlur2)
 		const heroBlur = document.getElementById('hero-blur');
-		const maxBlur = 10; // px
+		const heroBlur1 = document.getElementById('hero-blur-1');
+		const heroBlur2 = document.getElementById('hero-blur-2');
+		const feBlur1 = document.getElementById('feBlur1');
+		const feBlur2 = document.getElementById('feBlur2');
+		const maxBlur = 16; // px (shared max for layered blur as requested)
 
-		if (!overlay || !heroContent || !heroBlur) return;
+		if (!overlay || !heroContent || !feBlur1 || !feBlur2) return;
+
+		// Ensure the overlay's H1 appears exactly where the hero H1 is on-screen.
+		const heroH1 = document.querySelector('#hero-content header h1');
+		const overlayH1 = overlay.querySelector('h1');
+
+		function syncHeadingPosition() {
+			if (!heroH1 || !overlayH1) return;
+			const rect = heroH1.getBoundingClientRect();
+			// Place overlay heading at the same viewport coordinates as hero H1
+			overlayH1.style.position = 'fixed';
+			overlayH1.style.left = `${rect.left}px`;
+			overlayH1.style.top = `${rect.top}px`;
+			overlayH1.style.transform = 'none';
+			overlayH1.style.margin = '0';
+			// keep same z so it's visible above hero content
+			overlayH1.style.zIndex = '50';
+		}
+
+		// Initial sync and on resize (fonts/layout may change)
+		syncHeadingPosition();
+		window.addEventListener('resize', syncHeadingPosition, { passive: true });
 
 		let progress = 0; // 0..1
 		let target = 0;
@@ -92,13 +202,26 @@ import Button from "../components/Button.astro";
 
 			// hero content pushed left
 			const heroTx = -p * 120; // percent
-			heroContent.style.transform = `translateX(${heroTx}%)`;
-			heroContent.style.opacity = `${1 - p}`;
+			if (p > 0.001) {
+				// only set transform when overlay is actually opening to avoid creating
+				// an unnecessary stacking context when closed (which can block blending)
+				heroContent.style.transform = `translateX(${heroTx}%)`;
+				heroContent.style.opacity = `${1 - p}`;
+			} else {
+				// remove transform when closed so mix-blend-mode can see through to the video
+				heroContent.style.transform = '';
+				heroContent.style.opacity = '1';
+			}
 
 			// blur overlay
-			const blurPx = Math.min(maxBlur, p * maxBlur);
-			heroBlur.style.backdropFilter = `blur(${blurPx}px)`;
-			heroBlur.style.opacity = `${p * 0.85}`;
+			// Layered SVG Gaussian blurs: set stdDeviation on the two feGaussianBlur nodes
+			const blurPxLayer2 = Math.min(maxBlur, p * maxBlur); // stronger layer
+			const blurPxLayer1 = Math.min(maxBlur, p * maxBlur * 0.6); // softer layer
+			feBlur2.setAttribute('stdDeviation', String(blurPxLayer2));
+			feBlur1.setAttribute('stdDeviation', String(blurPxLayer1));
+			// Keep the decorative overlay divs for subtle tint/opacity if desired
+			heroBlur2.style.opacity = `${p * 0.28}`;
+			heroBlur1.style.opacity = `${p * 0.42}`;
 
 			// pointer events: enable overlay interactions only when open
 			overlay.style.pointerEvents = p > 0.01 ? 'auto' : 'none';
@@ -158,5 +281,52 @@ import Button from "../components/Button.astro";
 				e.preventDefault();
 			}
 		}, { passive: false });
+
+		// --- Custom square cursor implementation ---
+		(function setupCustomCursor(){
+			const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+			if (isTouch) return; // don't create custom cursor on touch devices
+
+			const cursor = document.getElementById('custom-cursor');
+			if (!cursor) return;
+
+			let mouseX = window.innerWidth / 2;
+			let mouseY = window.innerHeight / 2;
+			let curX = mouseX;
+			let curY = mouseY;
+			let rafId = null;
+
+			function onMove(e){
+				mouseX = e.clientX;
+				mouseY = e.clientY;
+				// ensure visible
+				cursor.style.opacity = '0.98';
+			}
+
+			window.addEventListener('mousemove', onMove, { passive: true });
+
+			function render(){
+				curX += (mouseX - curX) * 0.18;
+				curY += (mouseY - curY) * 0.18;
+				cursor.style.left = curX + 'px';
+				cursor.style.top = curY + 'px';
+				rafId = requestAnimationFrame(render);
+			}
+			render();
+
+			// subtle shrink on pointer down to feel tactile
+			window.addEventListener('mousedown', () => {
+				cursor.style.transform = 'translate(-50%, -50%) scale(0.88)';
+			});
+			window.addEventListener('mouseup', () => {
+				cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+			});
+
+			// hide the custom cursor on touchstart (fallback)
+			window.addEventListener('touchstart', () => {
+				cursor.style.display = 'none';
+				document.body.style.cursor = '';
+			}, { passive: true });
+		})();
 	});
 </script>
