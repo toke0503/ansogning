@@ -490,8 +490,13 @@ import adobeApps from "../assets/images/Adobe Apps.svg?url";
 			window.addEventListener('mousemove', onMove, { passive: true });
 
 			function render(){
-				curX += (mouseX - curX) * 0.18;
-				curY += (mouseY - curY) * 0.18;
+				// Use a higher interpolation factor so the custom cursor follows
+				// the real pointer more closely (less perceived lag). If you want
+				// perfectly instant movement, set the factor to 1 or assign
+				// positions directly.
+				const LERP = 0.5; // increase from 0.18 -> 0.5 for snappier follow
+				curX += (mouseX - curX) * LERP;
+				curY += (mouseY - curY) * LERP;
 				cursor.style.left = curX + 'px';
 				cursor.style.top = curY + 'px';
 				rafId = requestAnimationFrame(render);

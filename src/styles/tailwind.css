@@ -129,16 +129,20 @@
     position: absolute;
     left: 1.5rem; /* left-6 */
     top: 13rem; /* pushed further down from the H1 */
+    bottom: 1rem; /* span down to near the bottom of the viewport */
     display: flex;
     flex-direction: column;
+    justify-content: space-between; /* spread logos from under H1 to near bottom */
     gap: 0; /* remove gaps so hover areas can touch */
     z-index: 60;
     pointer-events: auto; /* allow hover interactions */
   }
 
   .skill-logo {
-    width: 48px;
-    height: 48px;
+    /* responsive size that scales with viewport height when vertical
+       (desktop). Media queries for horizontal layout override this value. */
+    width: clamp(40px, 4.5vh, 72px);
+    height: auto;
     object-fit: contain;
     display: block;
     filter: none;
@@ -161,11 +165,11 @@
   /* skill item: larger clickable/hover area so there's no 'dead' space */
   .skill-item {
     display: flex;
-    align-items: center;
+    align-items: start;
     justify-content: center;
-    width: 72px; /* room for scaled logo */
-    height: 72px;
-    padding: 8px 0; /* vertical padding creates the visual spacing */
+    width: auto; /* allow flex container to size based on logo */
+    height: auto;
+    padding: 6px 0; /* small vertical padding for touch area */
     box-sizing: content-box;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
@@ -188,6 +192,17 @@
      to scale with viewport height. When horizontal, make the row span nearly
      full viewport width with small side margins and distribute logos across it. */
   @media (max-width: 768px) {
+    .skills-title {
+      /* place the SKILLS H1 into normal flow on small screens so the
+         logo row naturally sits directly beneath it rather than overlapping
+         the paragraph. Desktop keeps absolute positioning. */
+      position: relative;
+      top: auto;
+      left: auto;
+      margin: 0 0 0.5rem 0;
+      mix-blend-mode: normal !important;
+    }
+
     .skills-logos {
       position: relative; /* flow between H1 and paragraph */
       left: auto;
@@ -195,10 +210,10 @@
       display: flex;
       flex-direction: row;
       justify-content: space-between; /* spread logos across available width */
-      align-items: center;
+      align-items: flex-start; /* align to top so logos sit under the H1 */
       gap: 0.5rem;
       width: calc(100% - 2rem); /* full viewport width with 1rem margins each side */
-      margin: 1rem auto; /* center with small margins */
+      margin: 0.5rem auto 1rem auto; /* sit right under H1 and above paragraph */
       z-index: 60;
       pointer-events: auto;
     }
@@ -464,6 +479,15 @@
      elements remain usable because the custom cursor has pointer-events: none. */
   body {
     cursor: none !important;
+  }
+
+  /* Stronger global rule to ensure the native cursor is hidden across
+     elements on pointer devices that support fine pointing. Coarse pointers
+     (touch) are handled below and will show the native cursor. */
+  @media (pointer: fine) {
+    html, body, * {
+      cursor: none !important;
+    }
   }
 
   /* The visual cursor itself: uses currentColor so we can give it the same
