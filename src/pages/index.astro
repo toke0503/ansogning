@@ -1,12 +1,13 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import hero from "../assets/images/hero.mp4";
-import Link from "../components/Link.astro";
-import { Image } from "astro:assets";
-import thumbsup from "../assets/images/thumbsup.png";
-import Heading from "../components/Heading.astro";
-import Text from "../components/Text.astro";
-import Button from "../components/Button.astro";
+import lightroom from "../assets/images/lightroom.svg?url";
+import illustrator from "../assets/images/illustrator.svg?url";
+import figma from "../assets/images/figma.svg?url";
+import premiere from "../assets/images/premiere.svg?url";
+import indesign from "../assets/images/indesign.svg?url";
+import aftere from "../assets/images/aftere.svg?url";
+import adobeApps from "../assets/images/Adobe Apps.svg?url";
 ---
 <MainLayout title="TOKE ELLEGAARD JENSEN — Multimedia Design Student">
 	<!-- Ensure page background is black so blurred edges don't reveal a white page background -->
@@ -29,9 +30,7 @@ import Button from "../components/Button.astro";
 	<!-- Slight dark overlay to improve text contrast (reduced opacity so blend modes remain visible) -->
 	<div class="fixed inset-0 bg-black/55 z-10"></div>
 
-		<!-- Blur overlay (animated via JS) -->
-		<!-- Decorative overlay elements (tint/opacity) kept for layering; actual blur is handled by the SVG filter below -->
-		<div id="hero-blur" class="fixed inset-0 z-20" style="opacity:0;"></div>
+	<!-- Decorative overlay elements (tint/opacity) kept for layering; actual blur is handled by the SVG filter below -->
 		<div id="hero-blur-1" class="hero-blur-layer z-20" style="opacity:0;"></div>
 		<!-- second blur layer for a layered effect (visual tint only) -->
 		<div id="hero-blur-2" class="hero-blur-layer z-22" style="opacity:0;"></div>
@@ -87,11 +86,60 @@ import Button from "../components/Button.astro";
 		</div>
 	</section>
 
+	<!-- SKILLS section: full-screen panel that will be scrolled into view and
+		 will push the overlay H1 and paragraph upward as it arrives. Icons deferred. -->
+	<section id="skills" class="skills-section" aria-hidden="true">
+		<div class="skills-inner container mx-auto px-6 py-12">
+			<h1 class="skills-title absolute top-6 left-6 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-red-600 tracking-tight text-left text-split">SKILLS</h1>
+			<!-- Vertical logo stack under the SKILLS heading -->
+			<div class="skills-logos absolute left-6 top-35 z-60" aria-hidden="true">
+				<div class="skill-item"><img src={lightroom} alt="Lightroom" class="skill-logo" /></div>
+				<div class="skill-item"><img src={illustrator} alt="Illustrator" class="skill-logo" /></div>
+				<div class="skill-item"><img src={premiere} alt="Premiere" class="skill-logo" /></div>
+				<div class="skill-item"><img src={aftere} alt="After Effects" class="skill-logo" /></div>
+				<div class="skill-item"><img src={indesign} alt="InDesign" class="skill-logo" /></div>
+				<div class="skill-item"><img src={adobeApps} alt="Adobe Apps" class="skill-logo" /></div>
+				<!-- place Figma as the bottom logo per request -->
+				<div class="skill-item"><img src={figma} alt="Figma" class="skill-logo" /></div>
+			</div>
+			<div class="skills-content grid grid-cols-1 md:grid-cols-12 gap-6 pt-70">
+				<div class="md:col-span-12 md:col-start-5">
+					<p class="skills-paragraph text-red-600">Video Production: <br>
+					From brainstorming weird ideas to shooting, editing, and color grading — I enjoy every part of bringing a story to life.
+<br> <br>
+					Programs: <br>
+					Mostly living in Premiere Pro, but I also hang out in Photoshop, Illustrator, and Figma when designing, editing, or organizing creative chaos.
+<br> <br>
+					Branding & Digital Communication: <br>
+					I like finding the right tone, visuals, and atmosphere that make a brand feel authentic and alive.
+<br> <br>
+					Web Design & Development: <br>
+					Comfortable with HTML, CSS, and Tailwind, and recently exploring Astro and Supabase to bring ideas online.
+					</p>
+				</div>
+			</div>
+		</div>
+	</section>
+
 	<!-- Fixed scroll text kept outside hero-content so it stays centered and animated -->
 	<p class="fixed-scroll-text text-red-600 uppercase tracking-widest hop text-split" style="opacity:0.9">scroll to learn more</p>
 
     <!-- Custom square cursor (red) that uses mix-blend-mode: difference -->
     <div id="custom-cursor" class="text-red-600" aria-hidden="true"></div>
+
+<!-- Contact overlay: functions like the other slide overlays and participates in staged gestures -->
+<section id="contact-overlay" class="slide-section" aria-hidden="true">
+	<div class="inner">
+		<h1 class="absolute top-6 left-6 text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-red-600 tracking-tight text-left text-split">LETS GET IN CONTACT</h1>
+		<div class="container mx-auto pt-32">
+			<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+				<div class="md:col-span-6 md:col-start-7">
+					<p class="text-red-600 text-split">If you&rsquo;ve made it this far — thanks for taking the time! <br> I&rsquo;m always open to new opportunities, collaborations, or a good chat about film and visual storytelling. <br> You can reach me at <a class="inline-link" href="mailto:tokeellegaard0503@gmail.com">tokeellegaard0503@gmail.com</a> or <a class="inline-link" href="tel:+4553322278">+45 53 32 22 78</a>. <br> You can also find some of my ongoing work and experiments on <a class="inline-link" href="https://www.instagram.com/toke.visuals/" target="_blank" rel="noopener noreferrer">@toke.visuals</a>. <br> Let&rsquo;s create something cool — Toke</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
 </MainLayout>
 <script>
 	// Add haze effect by duplicating text into a data-text attribute and a class
@@ -149,8 +197,10 @@ import Button from "../components/Button.astro";
 			});
 		}
 
-		// Apply to all elements marked with .text-split (word-level)
-		splitTextToWords('.text-split');
+		// Apply splitting only to headings and small fixed texts to reduce DOM bloat
+		// (avoid splitting long paragraphs). If you need other elements split,
+		// add a dedicated class (e.g. .split-letters) and include it here.
+		splitTextToWords('h1.text-split, .fixed-scroll-text');
 
 			// Note: haze pseudo-element approach removed. Glow is implemented via text-shadow
 			// in CSS, so we don't need to duplicate text into data-text or add haze classes.
@@ -159,41 +209,56 @@ import Button from "../components/Button.astro";
 		const overlay = document.getElementById('about-overlay');
 		const heroContent = document.getElementById('hero-content');
 		// SVG filter handles the actual Gaussian blur on the video (feBlur1, feBlur2)
-		const heroBlur = document.getElementById('hero-blur');
 		const heroBlur1 = document.getElementById('hero-blur-1');
 		const heroBlur2 = document.getElementById('hero-blur-2');
 		const feBlur1 = document.getElementById('feBlur1');
 		const feBlur2 = document.getElementById('feBlur2');
 		const maxBlur = 16; // px (shared max for layered blur as requested)
 
+		// Performance: avoid writing feGaussianBlur stdDeviation on every frame.
+		// Only update when the value changes beyond an epsilon to reduce work.
+		let lastBlur1 = -1;
+		let lastBlur2 = -1;
+		const BLUR_EPSILON = 0.25; // px threshold before writing attribute
+
 		if (!overlay || !heroContent || !feBlur1 || !feBlur2) return;
 
 		// Ensure the overlay's H1 appears exactly where the hero H1 is on-screen.
 		const heroH1 = document.querySelector('#hero-content header h1');
 		const overlayH1 = overlay.querySelector('h1');
+		const skillsTitle = document.querySelector('#skills .skills-title');
+		const skillsPara = document.querySelector('#skills .skills-paragraph');
 
 		function syncHeadingPosition() {
-			if (!heroH1 || !overlayH1) return;
-			const rect = heroH1.getBoundingClientRect();
-			// Place overlay heading at the same viewport coordinates as hero H1
-			overlayH1.style.position = 'fixed';
-			overlayH1.style.left = `${rect.left}px`;
-			overlayH1.style.top = `${rect.top}px`;
-			overlayH1.style.transform = 'none';
-			overlayH1.style.margin = '0';
-			// keep same z so it's visible above hero content
+			// Keep headings on the overlay/skills visually above other layers.
+			// Rely on CSS absolute positioning (top-6 left-6) for layout so they
+			// remain correctly placed across responsive widths. Only enforce
+			// a high z-index here to avoid blending/stacking issues.
+			if (!overlayH1) return;
 			overlayH1.style.zIndex = '50';
+
+			if (skillsTitle && skillsTitle instanceof HTMLElement) {
+				skillsTitle.style.zIndex = '50';
+			}
+
+			const contactH1 = document.querySelector('#contact-overlay h1');
+			if (contactH1 && contactH1 instanceof HTMLElement) contactH1.style.zIndex = '50';
 		}
 
-		// Initial sync and on resize (fonts/layout may change)
+		// Initial z-index ensure; rely on CSS for positioning/layout
 		syncHeadingPosition();
 		window.addEventListener('resize', syncHeadingPosition, { passive: true });
 
-		let progress = 0; // 0..1
+		let progress = 0; // 0..1 for overlay
 		let target = 0;
+		let skillProgress = 0; // 0..1 for skills
+		let skillTarget = 0;
+		let contactProgress = 0; // 0..1 for contact overlay
+		let contactTarget = 0;
 		let rafId = null;
+		let lastStageCompleteAt = 0; // timestamp when overlay/skills last reached a stage
 
-		function apply(p) {
+		function apply(p, sp, cp) {
 			// overlay slides from right: translateX(100% -> 0%)
 			const tx = 100 - p * 100; // percent
 			overlay.style.transform = `translateX(${tx}%)`;
@@ -214,59 +279,178 @@ import Button from "../components/Button.astro";
 			}
 
 			// blur overlay
-			// Layered SVG Gaussian blurs: set stdDeviation on the two feGaussianBlur nodes
+			// Layered SVG Gaussian blurs: compute desired stdDeviation for the two nodes
 			const blurPxLayer2 = Math.min(maxBlur, p * maxBlur); // stronger layer
 			const blurPxLayer1 = Math.min(maxBlur, p * maxBlur * 0.6); // softer layer
-			feBlur2.setAttribute('stdDeviation', String(blurPxLayer2));
-			feBlur1.setAttribute('stdDeviation', String(blurPxLayer1));
+			// Only write attributes when the change is meaningful to avoid heavy work
+			if (Math.abs(blurPxLayer2 - lastBlur2) > BLUR_EPSILON) {
+				feBlur2.setAttribute('stdDeviation', String(blurPxLayer2));
+				lastBlur2 = blurPxLayer2;
+			}
+			if (Math.abs(blurPxLayer1 - lastBlur1) > BLUR_EPSILON) {
+				feBlur1.setAttribute('stdDeviation', String(blurPxLayer1));
+				lastBlur1 = blurPxLayer1;
+			}
 			// Keep the decorative overlay divs for subtle tint/opacity if desired
 			heroBlur2.style.opacity = `${p * 0.28}`;
 			heroBlur1.style.opacity = `${p * 0.42}`;
 
 			// pointer events: enable overlay interactions only when open
 			overlay.style.pointerEvents = p > 0.01 ? 'auto' : 'none';
+
+			// --- SKILLS section push behavior ---
+			const skills = document.getElementById('skills');
+			if (skills) {
+				// Default: skills slides from bottom (100% -> 0%) as sp goes 0->1
+				let skillsTransform = `translateY(${(1 - (sp || 0)) * 100}%)`;
+				let skillsOpacity = `${Math.min(1, (sp || 0))}`;
+				let skillsPointer = (sp > 0.99) ? 'auto' : 'none';
+				// If the contact overlay is opening, hide/slide the skills section out
+				// so the contact panel replaces it instead of stacking on top.
+				if ((cp || 0) > 0.01) {
+					// push skills out to the left to match contact sliding in from the right
+					skillsTransform = `translateX(${-(cp || 0) * 120}%)`;
+					skillsOpacity = `${Math.max(0, 1 - (cp || 0) * 1.2)}`;
+					skillsPointer = 'none';
+				}
+				// apply computed values
+				skills.style.transform = skillsTransform;
+				skills.style.opacity = skillsOpacity;
+				skills.style.pointerEvents = skillsPointer;
+
+				// push overlay H1 and paragraph upward as skills arrives (only when contact not active)
+				if ((cp || 0) <= 0.01) {
+					if (overlayH1 && overlayH1 instanceof HTMLElement) {
+						overlayH1.style.transform = `translateY(${- (sp || 0) * 120}%)`;
+						overlayH1.style.opacity = `${Math.max(0, 1 - sp * 1.2)}`;
+					}
+					const overlayP = overlay.querySelector('.inner p');
+					if (overlayP && overlayP instanceof HTMLElement) {
+						overlayP.style.transform = `translateY(${- (sp || 0) * 80}%)`;
+						overlayP.style.opacity = `${Math.max(0, 1 - sp * 1.1)}`;
+					}
+				}
+			}
+
+			// --- CONTACT overlay behaviour ---
+			const contact = document.getElementById('contact-overlay');
+			if (contact) {
+				// contact slides in from right like the main overlay
+				const ctx = 100 - (cp || 0) * 100;
+				contact.style.transform = `translateX(${ctx}%)`;
+				contact.style.opacity = `${cp || 0}`;
+				contact.style.pointerEvents = (cp > 0.01) ? 'auto' : 'none';
+				contact.setAttribute('aria-hidden', (cp || 0) === 0 ? 'true' : 'false');
+
+			}
 		}
 
 		function raf() {
+			// overlay progress easing
 			progress += (target - progress) * 0.18;
 			if (Math.abs(target - progress) < 0.001) progress = target;
-			apply(progress);
-			if (progress !== target) rafId = requestAnimationFrame(raf); else rafId = null;
+			// skills progress easing
+			skillProgress += (skillTarget - skillProgress) * 0.18;
+			if (Math.abs(skillTarget - skillProgress) < 0.001) skillProgress = skillTarget;
+			// contact progress easing
+			contactProgress += (contactTarget - contactProgress) * 0.18;
+			if (Math.abs(contactTarget - contactProgress) < 0.001) contactProgress = contactTarget;
+			apply(progress, skillProgress, contactProgress);
+			if (progress !== target || skillProgress !== skillTarget || contactProgress !== contactTarget) rafId = requestAnimationFrame(raf); else rafId = null;
 		}
 
 		function setTarget(v) {
 			target = Math.max(0, Math.min(1, v));
+			// mark stage complete immediately when we snap fully open/closed
+			if (target >= 0.999 || target <= 0.001) lastStageCompleteAt = performance.now();
 			if (!rafId) rafId = requestAnimationFrame(raf);
 		}
 
-		// Wheel handling
+		function setSkillTarget(v) {
+			skillTarget = Math.max(0, Math.min(1, v));
+			// mark stage complete immediately when we snap fully open/closed
+			if (skillTarget >= 0.999 || skillTarget <= 0.001) lastStageCompleteAt = performance.now();
+			if (!rafId) rafId = requestAnimationFrame(raf);
+		}
+
+		function setContactTarget(v) {
+			contactTarget = Math.max(0, Math.min(1, v));
+			if (contactTarget >= 0.999 || contactTarget <= 0.001) lastStageCompleteAt = performance.now();
+			if (!rafId) rafId = requestAnimationFrame(raf);
+		}
+
+		// Gesture-based snapping: treat a continuous wheel gesture as a single
+		// action that advances exactly one stage (overlay or skills). We lock
+		// processing until wheel events stop for a short timeout.
+		const EPS = 0.0001;
+		const GESTURE_LOCK_MS = 120;
+		let gestureLocked = false;
+		let wheelIdleTimer = null;
+		// Touch gesture lock
+		let touchGestureLocked = false;
+		let touchStartY = null;
+
 		window.addEventListener('wheel', (e) => {
 			const delta = Math.sign(e.deltaY);
-			if (delta > 0) {
-				// scroll down -> reveal overlay
-				setTarget(target + Math.abs(e.deltaY) / 600);
-			} else if (delta < 0) {
-				setTarget(target - Math.abs(e.deltaY) / 600);
+			// reset idle timer (wheel considered part of same gesture until idle)
+			if (wheelIdleTimer) clearTimeout(wheelIdleTimer);
+			wheelIdleTimer = setTimeout(() => { gestureLocked = false; }, GESTURE_LOCK_MS);
+
+			if (gestureLocked) {
+				if ((target > 0 && target < 1) || skillTarget > 0 || contactTarget > 0) e.preventDefault();
+				return;
 			}
 
-			// prevent default page scroll while overlay is moving or not fully open
-			if (target > 0 && target < 1) {
-				e.preventDefault();
+			// consume gesture: snap one stage (overlay -> skills -> contact)
+			if (delta > 0) {
+				if (target < 1 - EPS) setTarget(1);
+				else if (skillTarget < 1 - EPS) setSkillTarget(1);
+				else if (contactTarget < 1 - EPS) setContactTarget(1);
+			} else if (delta < 0) {
+				if (contactTarget > EPS) setContactTarget(0);
+				else if (skillTarget > EPS) setSkillTarget(0);
+				else if (target > EPS) setTarget(0);
 			}
+
+			gestureLocked = true;
+			if ((target > 0 && target < 1) || skillTarget > 0 || contactTarget > 0) e.preventDefault();
 		}, { passive: false });
 
-		// Touch support
-		let touchStartY = null;
 		window.addEventListener('touchstart', (e) => {
+			touchGestureLocked = false;
 			touchStartY = e.touches[0].clientY;
 		}, { passive: true });
+
 		window.addEventListener('touchmove', (e) => {
 			if (touchStartY === null) return;
 			const dy = touchStartY - e.touches[0].clientY;
-			setTarget(target + dy / 800);
+			if (Math.abs(dy) < 12) return; // require a small threshold
+			if (touchGestureLocked) {
+				if ((target > 0 && target < 1) || skillTarget > 0 || contactTarget > 0) e.preventDefault();
+				return;
+			}
+
+
+			// same staged progression for touch: overlay -> skills -> contact
+			if (dy > 0) {
+				if (target < 1 - EPS) setTarget(1);
+				else if (skillTarget < 1 - EPS) setSkillTarget(1);
+				else if (contactTarget < 1 - EPS) setContactTarget(1);
+			} else if (dy < 0) {
+				if (contactTarget > EPS) setContactTarget(0);
+				else if (skillTarget > EPS) setSkillTarget(0);
+				else if (target > EPS) setTarget(0);
+			}
+
+			touchGestureLocked = true;
 			touchStartY = e.touches[0].clientY;
-			if (target > 0 && target < 1) e.preventDefault();
+			if ((target > 0 && target < 1) || skillTarget > 0) e.preventDefault();
 		}, { passive: false });
+
+		window.addEventListener('touchend', () => {
+			touchGestureLocked = false;
+			touchStartY = null;
+		});
 
 		// Allow normal page scrolling when overlay fully open (target===1)
 		// and allow closing by scrolling up when at top of overlay content
@@ -327,6 +511,40 @@ import Button from "../components/Button.astro";
 				cursor.style.display = 'none';
 				document.body.style.cursor = '';
 			}, { passive: true });
+		})();
+
+		// --- SKILLS logos Dock-like hover behavior ---
+		(function setupSkillsDock(){
+			const container = document.querySelector('.skills-logos');
+			if (!container) return;
+			const items = Array.from(container.querySelectorAll('.skill-item'));
+			let activeIdx = -1;
+
+			function clearStates(){
+				items.forEach(it => {
+					it.classList.remove('is-active','is-adjacent');
+				});
+				activeIdx = -1;
+			}
+
+			items.forEach((item, i) => {
+				item.addEventListener('mouseenter', () => {
+					clearStates();
+					activeIdx = i;
+					item.classList.add('is-active');
+					if (items[i-1]) items[i-1].classList.add('is-adjacent');
+					if (items[i+1]) items[i+1].classList.add('is-adjacent');
+				});
+				item.addEventListener('mouseleave', () => {
+					// small timeout so flicker when moving between adjacent logos is smoother
+					setTimeout(() => {
+						if (activeIdx === i) clearStates();
+					}, 50);
+				});
+			});
+
+			// clear when leaving the whole container
+			container.addEventListener('mouseleave', clearStates);
 		})();
 	});
 </script>
